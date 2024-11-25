@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pago Exitoso</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: url("{{ url_for('static', filename='img/Faro_La_Serena_451.jpg') }}")
+          no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+
+      .confirmation-box {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        margin-top: 100px;
+        text-align: center;
+      }
+
+      .confirmation-box h1 {
+        color: #28a745; /* Verde éxito */
+        font-size: 2rem;
+        margin-bottom: 20px;
+      }
+
+      .confirmation-box p {
+        font-size: 1.1rem;
+        color: #333;
+      }
+
+      .btn-download {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        text-decoration: none;
+        margin-top: 20px;
+        display: inline-block;
+      }
+
+      .btn-download:hover {
+        background-color: #0056b3;
+        color: white;
+      }
+
+      .countdown {
+        font-size: 1rem;
+        color: #555;
+        margin-top: 10px;
+      }
+    </style>
+    <script>
+      let countdown = 10;
+      function updateCountdown() {
+        const countdownElement = document.getElementById("countdown");
+        countdownElement.textContent = countdown;
+        countdown--;
+        if (countdown < 0) {
+          window.location.href = "/";
+        } else {
+          setTimeout(updateCountdown, 1000);
+        }
+      }
+    </script>
+  </head>
+  <body onload="updateCountdown()">
+    <div class="container d-flex justify-content-center">
+      <div class="confirmation-box">
+        <h1>¡Pago realizado correctamente!</h1>
+        <p>Tu boleta está lista para descargar.</p>
+        <a
+          href="{{ url_for('descargar_boleta') }}?file_path={{ file_path }}"
+          class="btn-download"
+        >
+          Descargar Boleta
+        </a>
+        <p class="countdown">
+          Serás redirigido al inicio en <span id="countdown">10</span> segundos.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

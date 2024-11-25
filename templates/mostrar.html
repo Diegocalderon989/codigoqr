@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Usuarios</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        background-image: url("/static/img/Faro_La_Serena_451.jpg"); /* Ruta relativa en Flask */
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: white;
+      }
+      h1 {
+        color: white;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+      .alert {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+      .container {
+        background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente */
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      }
+      table {
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      thead {
+        background-color: #343a40;
+        color: white;
+      }
+      .btn {
+        margin: 2px;
+      }
+      .btn-cerrar-sesion {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .btn-cerrar-sesion:hover {
+        background-color: #c82333;
+      }
+      .denied-message-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+      }
+      .denied-message {
+        border: 3px solid red;
+        border-radius: 15px;
+        padding: 40px;
+        background-color: rgba(255, 0, 0, 0.2);
+        color: red;
+        font-weight: bold;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+      }
+      .denied-subtext {
+        margin-top: 15px;
+        font-size: 1.2rem;
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      }
+    </style>
+    <script>
+      // Validación de clave al cargar la página
+      document.addEventListener("DOMContentLoaded", function () {
+        const claveCorrecta = "123456"; // Clave por defecto
+        if (!sessionStorage.getItem("claveCorrecta")) {
+          const claveIngresada = prompt("Ingrese la clave de acceso:");
+          if (claveIngresada === claveCorrecta) {
+            sessionStorage.setItem("claveCorrecta", "true"); // Guardar estado de sesión
+          } else {
+            // Mostrar mensaje de acceso denegado con estilo
+            document.body.innerHTML = `
+              <div class="denied-message-container">
+                <div>
+                  <div class="denied-message">Acceso Denegado</div>
+                  <div class="denied-subtext">No tienes permiso para acceder a esta página.</div>
+                </div>
+              </div>
+            `;
+          }
+        }
+      });
+
+      // Función para cerrar sesión
+      function cerrarSesion() {
+        sessionStorage.removeItem("claveCorrecta"); // Eliminar estado de sesión
+        window.location.href = "../"; // Redirigir a la página del código QR
+      }
+
+      // Función para mostrar u ocultar la contraseña
+      function togglePassword(id, isVisible) {
+        const passwordElement = document.getElementById(id);
+        if (isVisible) {
+          passwordElement.textContent =
+            passwordElement.getAttribute("data-password");
+        } else {
+          passwordElement.textContent = "••••••";
+        }
+      }
+
+      // JavaScript para ocultar automáticamente los mensajes flash
+      document.addEventListener("DOMContentLoaded", function () {
+        const flashMessages = document.querySelectorAll(".alert");
+        flashMessages.forEach((message) => {
+          setTimeout(() => {
+            message.style.transition = "opacity 0.5s";
+            message.style.opacity = "0";
+            setTimeout(() => {
+              message.remove(); // Eliminar el mensaje del DOM
+            }, 500); // Tiempo para la transición (0.5s)
+          }, 3000); // Duración antes de desaparecer (3s)
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <!-- Botón de cerrar sesión -->
+    <button class="btn-cerrar-sesion" onclick="cerrarSesion()">
+      Cerrar Sesión
+    </button>
+
+    <div class="container mt-5">
+      <div class="text-center mb-5">
+        <h1>Lista de Usuarios</h1>
+        <p class="text-light">Gestión de usuarios del sistema</p>
+      </div>
+
+      <!-- Mensajes Flash -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="mt-3">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} text-center">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Tabla de Usuarios -->
+      <div class="table-responsive mt-4 shadow-sm p-3 bg-body rounded">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-dark text-center">
+            <tr>
+              <th>#</th>
+              <th>RUT</th>
+              <th>Nombre Completo</th>
+              <th>Contraseña</th>
+              <th>Saldo</th>
+              <th>Última Conexión</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+              <td class="text-center">{{ loop.index }}</td>
+              <td>{{ usuario.rut }}</td>
+              <td>{{ usuario.nombre_completo }}</td>
+              <td class="text-center">
+                <span
+                  id="password-{{ loop.index }}"
+                  data-password="{{ usuario.password }}"
+                  >••••••</span
+                >
+                <button
+                  class="btn btn-light btn-sm"
+                  onmousedown="togglePassword('password-{{ loop.index }}', true)"
+                  onmouseup="togglePassword('password-{{ loop.index }}', false)"
+                  onmouseleave="togglePassword('password-{{ loop.index }}', false)"
+                >
+                  👁
+                </button>
+              </td>
+              <td class="text-end">${{ usuario.saldo }}</td>
+              <td>{{ usuario.ultima_conexion }}</td>
+              <td class="text-center">
+                <a
+                  href="/editar/{{ usuario.rut }}"
+                  class="btn btn-warning btn-sm"
+                  >Editar</a
+                >
+                <a
+                  href="/eliminar/{{ usuario.rut }}"
+                  class="btn btn-danger btn-sm"
+                  onclick="return confirm('¿Estás seguro de eliminar este usuario?')"
+                  >Eliminar</a
+                >
+                <a href="/agregar" class="btn btn-success btn-sm">Agregar</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
